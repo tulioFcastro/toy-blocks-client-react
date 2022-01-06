@@ -1,4 +1,3 @@
-import React from "react";
 import { mount } from "enzyme";
 import configureMockStore, { MockStoreEnhanced } from "redux-mock-store";
 import thunk from "redux-thunk";
@@ -25,12 +24,16 @@ describe("<Nodes />", () => {
       },
     ],
   };
+  const blocks = {
+    list: [],
+    loading: [],
+  };
 
   let store: MockStoreEnhanced<unknown, {}>;
 
   function setup(): JSX.Element {
     const middlewares = [thunk];
-    store = configureMockStore(middlewares)({ nodes });
+    store = configureMockStore(middlewares)({ nodes, blocks });
     return (
       <Provider store={store}>
         <ConnectedNodes />

@@ -1,16 +1,23 @@
-import React from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
-  AccordionSummary,
-  Typography,
   AccordionDetails,
+  AccordionSummary,
   Box,
+  Typography
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import React from "react";
 import colors from "../constants/colors";
-import Status from "./Status";
+import {
+  selectAllBlocks,
+  selectAllLoadingBlocks
+} from "../reducers/blocks";
+import { useAppSelector } from "../store/configureStore";
 import { Node as NodeType } from "../types/Node";
+import Block from "./Block";
+import Loading from "./Loading";
+import Status from "./Status";
 
 type Props = {
   node: NodeType;
@@ -60,6 +67,14 @@ const TypographySecondaryHeading = styled(Typography)(({ theme }) => ({
 }));
 
 const Node: React.FC<Props> = ({ node, expanded, toggleNodeExpanded }) => {
+  const isLoading = useAppSelector(selectAllLoadingBlocks).some(
+    (block) => block.nodeUrl === node.url
+  );
+  const error = false;
+  const blocks = useAppSelector(selectAllBlocks).filter(
+    (block) => block.nodeUrl === node.url
+  );
+
   return (
     <AccordionRoot
       elevation={3}
@@ -79,8 +94,14 @@ const Node: React.FC<Props> = ({ node, expanded, toggleNodeExpanded }) => {
           <Status loading={node.loading} online={node.online} />
         </BoxSummaryContent>
       </AccordionSummaryContainer>
-      <AccordionDetails>
-        <Typography>Blocks go here</Typography>
+      <AccordionDetails style={{ paddingTop: 2 }}>
+        {isLoading ? (
+          <Loading />
+        ) : error ? (
+          <span style={{ color: colors.danger }}>Same problem happened</span>
+        ) : (
+          blocks?.map((block, index) => <Block block={block} key={index} />)
+        )}
       </AccordionDetails>
     </AccordionRoot>
   );

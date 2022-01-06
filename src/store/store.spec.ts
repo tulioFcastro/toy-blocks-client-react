@@ -1,6 +1,11 @@
 import { AnyAction, configureStore, EnhancedStore } from "@reduxjs/toolkit";
 import { ThunkMiddleware } from "redux-thunk";
 import nodesReducer, { checkNodeStatus, NodesState } from "../reducers/nodes";
+import blocksReducer, {
+  checkBlockStatus,
+  BlocksState,
+} from "../reducers/blocks";
+import { Block } from "../types/Block";
 
 describe("Store", () => {
   const nodes = {
@@ -11,9 +16,28 @@ describe("Store", () => {
       { url: "d.com", online: false, name: "", loading: false },
     ],
   };
+  const blockA: Block = {
+    id: 1,
+    type: "block",
+    attributes: {
+      index: 1,
+      timestamp: 1530679678,
+      data: "data 1",
+      "previous-hash": "abc.123",
+      hash: "cba.321",
+    },
+    nodeUrl: "http://localhost:3000",
+  };
+  const blocks = {
+    list: [blockA],
+    loading: [],
+  };
 
   let store: EnhancedStore<
-    { nodes: NodesState },
+    {
+      nodes: NodesState;
+      blocks: BlocksState;
+    },
     AnyAction,
     [
       | ThunkMiddleware<{ nodes: NodesState }, AnyAction, null>
@@ -25,6 +49,7 @@ describe("Store", () => {
     store = configureStore({
       reducer: {
         nodes: nodesReducer,
+        blocks: blocksReducer,
       },
       preloadedState: { nodes },
     });
@@ -73,11 +98,16 @@ describe("Store", () => {
         meta: { arg: nodes.list[0] },
         payload: { node_name: "theta" },
       },
+      {
+        type: checkBlockStatus.fulfilled.type,
+        meta: { arg: blockA.nodeUrl },
+        payload: [blockA],
+      },
     ];
     actions.forEach((action) => store.dispatch(action));
 
     const actual = store.getState();
-    const expected = {
+    const nodesExpected = {
       list: [
         { url: "a.com", online: true, name: "theta", loading: false },
         { url: "b.com", online: true, name: "epsilon", loading: false },
@@ -86,6 +116,13 @@ describe("Store", () => {
       ],
     };
 
-    expect(actual.nodes).toEqual(expected);
+    expect(actual.nodes).toEqual(nodesExpected);
+
+    const blocksExpected = {
+      list: [blockA],
+      loading: [],
+    };
+
+    expect(actual.blocks).toEqual(blocksExpected);
   });
 });

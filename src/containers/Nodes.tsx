@@ -5,6 +5,7 @@ import { Typography, Box } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/configureStore";
 import { checkNodesStatus, selectNodes } from "../reducers/nodes";
+import { checkBlockStatus } from "../reducers/blocks";
 
 export const Nodes: React.FC = () => {
   const [expandedNodeURL, setExpandedNodeURL] = useState<null | string>(null);
@@ -16,9 +17,11 @@ export const Nodes: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function toggleNodeExpanded(node: NodeType) {
-    setExpandedNodeURL(node.url === expandedNodeURL ? null : node.url);
-  }
+  const ToggleNodeExpanded = (node: NodeType) => {
+    const isNotExpanded = node.url === expandedNodeURL;
+    setExpandedNodeURL(isNotExpanded ? null : node.url);
+    if (!isNotExpanded) dispatch(checkBlockStatus(node.url));
+  };
 
   return (
     <Box paddingTop={7}>
@@ -30,7 +33,7 @@ export const Nodes: React.FC = () => {
           node={node}
           key={node.url}
           expanded={node.url === expandedNodeURL}
-          toggleNodeExpanded={toggleNodeExpanded}
+          toggleNodeExpanded={ToggleNodeExpanded}
         />
       ))}
     </Box>
